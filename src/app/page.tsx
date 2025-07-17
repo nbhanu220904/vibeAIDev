@@ -1,4 +1,9 @@
-// "use client";
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { useTRPC } from "@/trpc/client";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 // // import { Button } from "@/components/ui/button";
 // // import prisma from "@/lib/db";
@@ -42,28 +47,49 @@
 
 // export default Page;
 
-import {
-  // caller,
-  getQueryClient,
-  trpc,
-} from "@/trpc/server";
-import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
-import { Client } from "./Client";
-import { Suspense } from "react";
+// import {
+//   // caller,
+//   getQueryClient,
+//   trpc,
+// } from "@/trpc/server";
+// import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+// // import { Client } from "./Client";
+// import { Suspense } from "react";
 
-const Page = async () => {
-  const queryClient = getQueryClient();
-  void queryClient.prefetchQuery(
-    trpc.createWithVibeAI.queryOptions({ text: "Vibe AI Dev Server!" })
+const Page = () => {
+  //   const queryClient = getQueryClient();
+  //   void queryClient.prefetchQuery(
+  //     trpc.createWithVibeAI.queryOptions({ text: "Vibe AI Dev Server!" })
+  //   );
+  const trpc = useTRPC();
+  const invoke = useMutation(
+    trpc.invoke.mutationOptions({
+      // text: "Vibe AI Dev Server!",
+      onSuccess: () => {
+        toast.success("Background job invoked successfully!");
+      },
+    })
   );
 
   return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      <Suspense fallback={<div>Loading...</div>}>
-        <Client />
-      </Suspense>
-      {/* <div>{JSON.stringify(data)}</div> */}
-    </HydrationBoundary>
+    <div className="p-5 max-w-7xl mx-auto">
+      <h1 className="mb-10">Welcome to Vibe AI Dev Server</h1>
+      <Button
+        disabled={invoke.isPending}
+        className="p-5"
+        onClick={() =>
+          invoke.mutate({
+            text: "Vibe AI Dev Server!",
+          })
+        }
+      >
+        Invoke A Background Job
+      </Button>
+    </div>
+    // <HydrationBoundary state={dehydrate(queryClient)}>
+    //   <Suspense fallback={<div>Loading...</div>}>{/* <Client /> */}</Suspense>
+    //   {/* <div>{JSON.stringify(data)}</div> */}
+    // </HydrationBoundary>
   );
 };
 
